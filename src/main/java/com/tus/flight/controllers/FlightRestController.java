@@ -1,13 +1,17 @@
 package com.tus.flight.controllers;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 
@@ -48,5 +52,11 @@ public class FlightRestController {
 	@RequestMapping(value = "/flights", method = RequestMethod.GET)
 	public List<Flight> getFlights() {
 		return repo.findAll();
+	}
+	
+	@GetMapping(value = "/flights/by-price")
+	public ResponseEntity<List<Flight>> getEntitiesByPriceRange(@RequestParam BigDecimal minPrice, @RequestParam BigDecimal maxPrice) {
+		List<Flight> flights = repo.findByPriceBetween(minPrice, maxPrice);
+	    return ResponseEntity.ok(flights);		
 	}
 }
