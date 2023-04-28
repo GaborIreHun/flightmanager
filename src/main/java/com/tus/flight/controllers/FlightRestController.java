@@ -5,6 +5,7 @@ import java.net.URI;
 import java.util.List;
 
 import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -53,7 +54,7 @@ public class FlightRestController {
 	 * @return ResponseEntity with a status code of 201 CREATED and the created flight in the response body.
 	 */
 	@RequestMapping(value = "/flights", method = RequestMethod.POST)
-	public ResponseEntity<Flight> create(@Valid @RequestBody Flight flight) {
+	public ResponseEntity<Flight> create(@Valid @NotNull @RequestBody Flight flight) {
 		// Retrieving a 'Discount' instance from a third-party service using 'RestTemplate'
 		Discount discount = restTemplate.getForObject(discountServiceURL + flight.getDiscountCode(), Discount.class);
 		// Subtracting the discount from the flight's price if discount code exists
