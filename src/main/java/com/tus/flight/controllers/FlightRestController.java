@@ -4,10 +4,14 @@ import java.math.BigDecimal;
 import java.net.URI;
 import java.util.List;
 
+import javax.validation.Valid;
+import javax.validation.constraints.DecimalMin;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -51,7 +55,7 @@ public class FlightRestController {
 	 * @return ResponseEntity with a status code of 201 CREATED and the created flight in the response body.
 	 */
 	@RequestMapping(value = "/flights", method = RequestMethod.POST)
-	public ResponseEntity<Flight> create(@RequestBody Flight flight) {
+	public ResponseEntity<Flight> create(@Valid @RequestBody Flight flight) {
 		// Retrieving a 'Discount' instance from a third-party service using 'RestTemplate'
 		Discount discount = restTemplate.getForObject(discountServiceURL + flight.getDiscountCode(), Discount.class);
 		// Subtracting the discount from the flight's price if discount code exists
@@ -80,11 +84,11 @@ public class FlightRestController {
 	 * @return A ResponseEntity containing the List of retrieved flights or a not found status if no flight was not found.
 	 */
 	@RequestMapping(value = "/flights/destinations/{destination}", method = RequestMethod.GET)
-	public ResponseEntity<List<Flight>> getFlightByDestination(@PathVariable("destination") String destination) {
+	public ResponseEntity<List<Flight>> getFlightByDestination(@PathVariable("destination")@Valid String destination) {
 		// Finding Flight objects with provided destination and saving it into flightsFoundByDestination list
 		List<Flight> flightsFoundByDestination = repo.findByDestination(destination);
 		// Returning a not found status if no matches found
-		if(flightsFoundByDestination == null) {
+		if(flightsFoundByDestination == null || flightsFoundByDestination.isEmpty()) {
 			return ResponseEntity.notFound().build();
 		}
 		// Returning a response entity with the retrieved flights and an OK status
@@ -98,11 +102,11 @@ public class FlightRestController {
 	 * @return A ResponseEntity containing the List of retrieved flights or a not found status if no flight was not found.
 	 */
 	@RequestMapping(value = "/flights/origins/{origin}", method = RequestMethod.GET)
-	public ResponseEntity<List<Flight>> getFlightByOrigin(@PathVariable("origin") String origin) {
+	public ResponseEntity<List<Flight>> getFlightByOrigin(@PathVariable("origin")@Valid String origin) {
 		// Finding Flight objects with provided destination and saving it into flightsFoundByOrigin list
 		List<Flight> flightsFoundByOrigin = repo.findByOrigin(origin);
 		// Returning a not found status if no matches found
-		if(flightsFoundByOrigin == null) {
+		if(flightsFoundByOrigin == null || flightsFoundByOrigin.isEmpty()) {
 			return ResponseEntity.notFound().build();
 		}
 		// Returning a response entity with the retrieved flights and an OK status
@@ -119,7 +123,7 @@ public class FlightRestController {
 		// Finding all Flight objects and saving it into allFlights list
 		List<Flight> allFlights = repo.findAll();
 		// Returning a not found status if no matches found
-		if(allFlights == null) {
+		if(allFlights == null || allFlights.isEmpty()) {
 			return ResponseEntity.notFound().build();
 		}
 		// Returning a response entity with the retrieved flights and an OK status
@@ -136,9 +140,14 @@ public class FlightRestController {
 	 */
 	@GetMapping(value = "/flights/by-price")
 	public ResponseEntity<List<Flight>> getEntitiesByPriceRange(@RequestParam BigDecimal minPrice, @RequestParam BigDecimal maxPrice) {
+		// Returning a bad request status if the parameters are less than zero
+		if (minPrice.compareTo(BigDecimal.ZERO) < 0 || maxPrice.compareTo(BigDecimal.ZERO) < 0) {
+	        // Returning a bad request status if the input values are less than 0
+	        return ResponseEntity.badRequest().build();
+	    }
 		List<Flight> flights = repo.findByPriceBetween(minPrice, maxPrice);
 		// Returning a not found status if no matches found
-		if(flights == null) {
+		if(flights == null || flights.isEmpty()) {
 			return ResponseEntity.notFound().build();
 		}
 		// Wrapping the flights in a ResponseEntity and returning it
