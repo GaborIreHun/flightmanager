@@ -20,6 +20,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.tus.flight.dto.Discount;
 import com.tus.flight.model.Flight;
@@ -35,6 +37,9 @@ import com.tus.flight.repos.FlightRepo;
 @RequestMapping("/flightapi")
 public class FlightRestController {
 
+	// Setting up Logger
+	Logger log = LoggerFactory.getLogger(FlightRestController.class);
+		
 	// Injecting a 'FlightRepo' instance into this class
 	@Autowired
 	private FlightRepo repo;
@@ -55,6 +60,7 @@ public class FlightRestController {
 	 */
 	@RequestMapping(value = "/flights", method = RequestMethod.POST)
 	public ResponseEntity<Flight> create(@Valid @NotNull @RequestBody Flight flight) {
+		log.info("FlightManagerApplication POST method called ");
 		// Retrieving a 'Discount' instance from a third-party service using 'RestTemplate'
 		Discount discount = restTemplate.getForObject(discountServiceURL + flight.getDiscountCode(), Discount.class);
 		// Subtracting the discount from the flight's price if discount code exists
@@ -84,6 +90,7 @@ public class FlightRestController {
 	 */
 	@RequestMapping(value = "/flights/destinations/{destination}", method = RequestMethod.GET)
 	public ResponseEntity<List<Flight>> getFlightByDestination(@PathVariable("destination")@Valid String destination) {
+		log.info("FlightManagerApplication GET method called with destination param");
 		// Finding Flight objects with provided destination and saving it into flightsFoundByDestination list
 		List<Flight> flightsFoundByDestination = repo.findByDestination(destination);
 		// Returning a not found status if no matches found
@@ -102,6 +109,7 @@ public class FlightRestController {
 	 */
 	@RequestMapping(value = "/flights/origins/{origin}", method = RequestMethod.GET)
 	public ResponseEntity<List<Flight>> getFlightByOrigin(@PathVariable("origin")@Valid String origin) {
+		log.info("FlightManagerApplication GET method called with origin param");
 		// Finding Flight objects with provided destination and saving it into flightsFoundByOrigin list
 		List<Flight> flightsFoundByOrigin = repo.findByOrigin(origin);
 		// Returning a not found status if no matches found
@@ -119,6 +127,7 @@ public class FlightRestController {
 	 */
 	@RequestMapping(value = "/flights", method = RequestMethod.GET)
 	public ResponseEntity<List<Flight>> getFlights() {
+		log.info("FlightManagerApplication GET method called");
 		// Finding all Flight objects and saving it into allFlights list
 		List<Flight> allFlights = repo.findAll();
 		// Returning a not found status if no matches found
@@ -139,6 +148,7 @@ public class FlightRestController {
 	 */
 	@GetMapping(value = "/flights/by-price")
 	public ResponseEntity<List<Flight>> getEntitiesByPriceRange(@RequestParam BigDecimal minPrice, @RequestParam BigDecimal maxPrice) {
+		log.info("FlightManagerApplication GET method called with minPrice and maxPrice params");
 		// Returning a bad request status if the parameters are less than zero
 		if (minPrice.compareTo(BigDecimal.ZERO) < 0 || maxPrice.compareTo(BigDecimal.ZERO) < 0) {
 	        // Returning a bad request status if the input values are less than 0
