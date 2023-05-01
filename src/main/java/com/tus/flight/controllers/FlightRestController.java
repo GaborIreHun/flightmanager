@@ -70,6 +70,9 @@ public class FlightRestController {
 		else {
 			flight.setPrice(flight.getPrice().subtract(discount.getDiscount()));
 		}
+		if(flight.getDestination() == null || flight.getOrigin() == null || flight.getPrice() == null) {
+			return ResponseEntity.badRequest().build();
+		}
 		// Saving the flight to the repository and returning it
 		Flight flightCreated = repo.save(flight);
 		// Using ServletUriComponentsBuilder to build the Location header URL
